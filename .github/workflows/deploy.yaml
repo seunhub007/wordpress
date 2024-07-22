@@ -90,4 +90,4 @@ jobs:
 
       - name: "deploy helm"
         run: |
-          helm upgrade --install wpp wpp --set image.tag=${{ env.APP_VERSION }}
+          helm upgrade --install mychart wpp --set image.tag=${{ env.APP_VERSION }}
