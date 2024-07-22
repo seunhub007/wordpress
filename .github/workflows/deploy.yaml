@@ -1,0 +1,93 @@
+name: Deployment Workflow
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  preparation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Greetings"
+        run: |
+          echo "--- Greetings ----"
+      
+      - name: "Checkout"
+        uses: actions/checkout@v4
+
+      - name: "Create version number"
+        run: |
+          echo "APP_VERSION=${RANDOM}" >> $GITHUB_ENV
+
+          echo ${{ env.APP_VERSION }}
+
+      - name: checks out the repository
+        uses: actions/checkout@v3
+                     
+
+      - name: "Logs into docker"
+        uses: docker/login-action@v3
+        with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_PASSWORD }}  
+      
+      - name: "Build the image"
+        run: |
+          echo ${{ env.APP_VERSION }}
+          sudo docker build -t seun007/cal:${{ env.APP_VERSION }} .
+
+      - name: "Push the image to docker hub" 
+        run: |
+            docker push seun007/cal:${{ env.APP_VERSION }}
+       
+      - name: "Setup AWS"
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: "us-east-1"
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: "Connect to the cluster"
+        run: |
+          aws eks update-kubeconfig --name seun_cluster           
+               
+    
+      - name: "Get kubectl"
+        uses: azure/setup-kubectl@v3
+        with:
+          version: "latest"
+        id: install-kubectl
+    
+
+          
+      - name: "install Helm"
+        uses: azure/setup-helm@v4.2.0
+        id: install-helm 
+
+      - name: Create Helm chart
+        run: |
+          helm create mychart
+
+    #   - name: "Delete Templates"
+    #     run: |
+    #       rm -rf mychart/templates/tests/*
+    #       rm -rf mychart/templates/NOTES.txt
+    #       rm -rf mychart/templates/deployment.yaml
+    #       rm -rf mychart/templates/service.yaml
+    #       rm -rf mychart/templates/ingress.yaml
+    #       rm -rf mychart/templates/hpa.yaml
+    #       rm -rf mychart/templates/serviceaccount.yaml
+    #       rm -rf mychart/templates/_helpers.tpl
+
+      - name: "Add to Templates"
+        run: |
+          cp wp-mysql-pv.yaml mychart/templates
+          cp wp-mysql-pvc.yaml mychart/templates
+          cp wp-mysql-svc.yaml mychart/templates
+          cp wp-pvc.yaml mychart/templates
+          cp wp-svc.yaml mychart/templates
+          cp wp.yaml mychart/templates
+
+      - name: "deploy helm"
+        run: |
+          helm upgrade --install mychart mychart --set image.tag=${{ env.APP_VERSION }}
