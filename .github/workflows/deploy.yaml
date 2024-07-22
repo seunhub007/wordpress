@@ -66,18 +66,18 @@ jobs:
 
       - name: Create Helm chart
         run: |
-          helm create mychart
+          helm create wpp
 
-    #   - name: "Delete Templates"
-    #     run: |
-    #       rm -rf mychart/templates/tests/*
-    #       rm -rf mychart/templates/NOTES.txt
-    #       rm -rf mychart/templates/deployment.yaml
-    #       rm -rf mychart/templates/service.yaml
-    #       rm -rf mychart/templates/ingress.yaml
-    #       rm -rf mychart/templates/hpa.yaml
-    #       rm -rf mychart/templates/serviceaccount.yaml
-    #       rm -rf mychart/templates/_helpers.tpl
+      - name: "Delete Templates"
+        run: |
+          rm -rf mychart/templates/tests/*
+          rm -rf mychart/templates/NOTES.txt
+          rm -rf mychart/templates/deployment.yaml
+          rm -rf mychart/templates/service.yaml
+          rm -rf mychart/templates/ingress.yaml
+          rm -rf mychart/templates/hpa.yaml
+          rm -rf mychart/templates/serviceaccount.yaml
+          rm -rf mychart/templates/_helpers.tpl
 
       - name: "Add to Templates"
         run: |
@@ -90,4 +90,4 @@ jobs:
 
       - name: "deploy helm"
         run: |
-          helm upgrade --install mychart mychart --set image.tag=${{ env.APP_VERSION }}
+          helm upgrade --install wpp wpp --set image.tag=${{ env.APP_VERSION }}
