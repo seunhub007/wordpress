@@ -60,7 +60,7 @@ jobs:
     
 
           
-      - name: "install Helm"
+      - name: "installing Helm"
         uses: azure/setup-helm@v4.2.0
         id: install-helm 
 
